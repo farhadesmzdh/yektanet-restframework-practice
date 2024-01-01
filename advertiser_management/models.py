@@ -14,10 +14,17 @@ class Ad(models.Model):
     imgUrl = models.URLField(max_length=256)
     link = models.URLField(max_length=256)
     advertiser = models.ForeignKey(Advertiser, on_delete=models.CASCADE)
-    clicks = models.IntegerField(default=0)
-    views = models.IntegerField(default=0)
 
-    def incClicks(self):
-        self.clicks += 1
-        self.save()
+
+
+class Click(models.Model):
+    ad_id = models.ForeignKey(Ad, on_delete=models.CASCADE, to_field="id")
+    time = models.DateTimeField(auto_now_add=True)
+    ip = models.GenericIPAddressField(protocol='both', unpack_ipv4=True)
+
+
+class view(models.Model):
+    id_ad = models.ForeignKey(Ad, on_delete=models.CASCADE, to_field="id")
+    time = models.DateTimeField(auto_now_add=True)
+    ip = models.GenericIPAddressField(protocol='both', unpack_ipv4=True)
 

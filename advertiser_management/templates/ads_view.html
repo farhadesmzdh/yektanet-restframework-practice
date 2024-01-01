@@ -24,7 +24,7 @@
     <div class="advertiser-container">
         {% for ad in ads %}
             <div class="ad-item">
-                <form method="post" action="{% url 'ad_click' ad.id %}" id="adForm{{ ad.id }}">
+                <form method="post" action="{% url 'ad_click' ad_id=ad.id %}?ad_id={{ ad.id }}" id="adForm{{ ad.id }}">
                     {% csrf_token %}
                     <a href="{{ ad.link }}" onclick="document.getElementById('adForm{{ ad.id }}').submit(); return false;">
                         <img src="{{ ad.imgUrl }}" alt="{{ ad.title }} Image">
@@ -36,3 +36,5 @@
         {% endfor %}
     </div>
 {% endfor %}
+
+
