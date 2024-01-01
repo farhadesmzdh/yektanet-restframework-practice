@@ -13,5 +13,19 @@ class SaveUserClickMiddleware(MiddlewareMixin):
             )
 
             click_instance.save()
-            request.click_instance = click_instance
+
+
+class AddViewForEveryAdMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        print(f"path = {request.path}")
+        from .models import Views, Ad
+        if request.path.endswith('/ads/'):
+            print("noooo")
+            for ad in Ad.objects.all():
+                new_view = Views.objects.create(
+                    ad_id=Ad.objects.get(id=ad.id),
+                    ip=request.META.get('REMOTE_ADDR')
+                )
+                new_view.save()
+
 

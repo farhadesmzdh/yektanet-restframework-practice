@@ -23,8 +23,8 @@ class Click(models.Model):
     ip = models.GenericIPAddressField(protocol='both', unpack_ipv4=True)
 
 
-class view(models.Model):
-    id_ad = models.ForeignKey(Ad, on_delete=models.CASCADE, to_field="id")
+class Views(models.Model):
+    ad_id = models.ForeignKey(Ad, on_delete=models.CASCADE, to_field="id")
     time = models.DateTimeField(auto_now_add=True)
     ip = models.GenericIPAddressField(protocol='both', unpack_ipv4=True)
 

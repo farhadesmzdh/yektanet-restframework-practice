@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'advertiser_management.middleware.SaveUserClickMiddleware',
+    'advertiser_management.middleware.AddViewForEveryAdMiddleware',
 ]
 
 ROOT_URLCONF = 'yektanet.urls'
