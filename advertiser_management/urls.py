@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import ads_view, ad_click, add_ad
+from .views import AdsView, AdClickView, AddAdView
 
 urlpatterns = [
-    path('ads/', ads_view, name='ads_view'),
-    path('ad_click/<int:ad_id>/', ad_click, name='ad_click'),
-    path('add_ad/', add_ad, name='add_ad'),
+    path('ads/', AdsView.as_view(), name='ads_view'),
+    path('ad_click/<int:ad_id>/', AdClickView.as_view(), name='ad_click'),
+    path('add_ad/', AddAdView.as_view(), name='add_ad'),
 ]

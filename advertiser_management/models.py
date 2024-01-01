@@ -14,7 +14,7 @@ class Ad(models.Model):
     imgUrl = models.URLField(max_length=256)
     link = models.URLField(max_length=256)
     advertiser = models.ForeignKey(Advertiser, on_delete=models.CASCADE)
-
+    approve = models.BooleanField(default=False)
 
 
 class Click(models.Model):
