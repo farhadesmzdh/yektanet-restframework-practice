@@ -14,4 +14,10 @@ class Ad(models.Model):
     imgUrl = models.URLField(max_length=256)
     link = models.URLField(max_length=256)
     advertiser = models.ForeignKey(Advertiser, on_delete=models.CASCADE)
+    clicks = models.IntegerField(default=0)
+    views = models.IntegerField(default=0)
+
+    def incClicks(self):
+        self.clicks += 1
+        self.save()
 

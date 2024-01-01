@@ -8,13 +8,14 @@
     .ad-item {
         list-style: none;
         text-align: center;
-        width: 300px; /* Set a fixed width for each ad item */
+        width: 300px;
         margin: 10px;
     }
 
     .ad-item img {
-        width: 100%; /* Make the image fill the container */
-        height: auto; /* Maintain aspect ratio */
+        width: 100%;
+        height: auto;
+        cursor: pointer;
     }
 </style>
 
@@ -23,11 +24,14 @@
     <div class="advertiser-container">
         {% for ad in ads %}
             <div class="ad-item">
-                <a href="{{ ad.link }}">
-                    <img src="{{ ad.imgUrl }}" alt="{{ ad.title }} Image">
-                </a>
-                <br>
-                <strong>{{ ad.title }}</strong>
+                <form method="post" action="{% url 'ad_click' ad.id %}" id="adForm{{ ad.id }}">
+                    {% csrf_token %}
+                    <a href="{{ ad.link }}" onclick="document.getElementById('adForm{{ ad.id }}').submit(); return false;">
+                        <img src="{{ ad.imgUrl }}" alt="{{ ad.title }} Image">
+                    </a>
+                    <br>
+                    <strong>{{ ad.title }}</strong>
+                </form>
             </div>
         {% endfor %}
     </div>
