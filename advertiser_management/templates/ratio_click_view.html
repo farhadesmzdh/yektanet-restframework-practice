@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Click-View Ratio</title>
+</head>
+<body>
+    <h1>Click-View Ratio</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Ad ID</th>
+                <th>Hour</th>
+                <th>Click Count</th>
+                <th>View Count</th>
+                <th>Ratio</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in result %}
+                <tr>
+                    <td>{{ entry.ad_id }}</td>
+                    <td>{{ entry.hour }}</td>
+                    <td>{{ entry.count_click }}</td>
+                    <td>{{ entry.count_view }}</td>
+                    <td>{{ entry.ratio }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p>Total Ratio: {{ total_ratio }}</p>
+</body>
+</html>

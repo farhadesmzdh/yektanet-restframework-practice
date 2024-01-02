@@ -17,14 +17,18 @@ class Ad(models.Model):
     approve = models.BooleanField(default=False)
 
 
-class Click(models.Model):
-    ad_id = models.ForeignKey(Ad, on_delete=models.CASCADE, to_field="id")
-    time = models.DateTimeField(auto_now_add=True)
-    ip = models.GenericIPAddressField(protocol='both', unpack_ipv4=True)
-
-
 class Views(models.Model):
     ad_id = models.ForeignKey(Ad, on_delete=models.CASCADE, to_field="id")
     time = models.DateTimeField(auto_now_add=True)
     ip = models.GenericIPAddressField(protocol='both', unpack_ipv4=True)
+
+
+class Click(models.Model):
+    ad_id = models.ForeignKey(Ad, on_delete=models.CASCADE, to_field="id")
+    time = models.DateTimeField(auto_now_add=True)
+    ip = models.GenericIPAddressField(protocol='both', unpack_ipv4=True)
+    view_id = models.ForeignKey(Views, on_delete=models.CASCADE)
+
+
+
 

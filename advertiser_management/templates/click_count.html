@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Click Count</title>
+</head>
+<body>
+    <h1>Total Clicks</h1>
+    <p>Total Clicks: {{ total_clicks }}</p>
+
+    <h1>Clicks Per Ad</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Ad ID</th>
+                <th>Total Click Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in clicks_per_ad %}
+                <tr>
+                    <td>{{ entry.ad_id }}</td>
+                    <td>{{ entry.count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Clicks Per Hour</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Ad ID</th>
+                <th>Hour</th>
+                <th>Click Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in clicks_per_hour %}
+                <tr>
+                    <td>{{ entry.ad_id }}</td>
+                    <td>{{ entry.hour }}</td>
+                    <td>{{ entry.count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

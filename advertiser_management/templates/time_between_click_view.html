@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Template</title>
+</head>
+<body>
+    <h1>Average Time Difference for Each Ad</h1>
+
+    {% for entry in average_per_ad %}
+        <p>Ad ID: {{ entry.ad_id }} - Average Time Difference: {{ entry.avg_seconds }} seconds</p>
+    {% endfor %}
+</body>
+</html>
