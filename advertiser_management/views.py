@@ -3,19 +3,19 @@ from django.db.models.functions import TruncHour
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.views.generic import RedirectView
+from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 
 from .models import Ad, Advertiser, Click, Views
 from .forms import AdForm
+from .serializers import AdSerializer, ClickCountSerializer, RatioClickByViewSerializer, TimeBetweenClickSerializer
 
 
-class AdsView(View):
-    template_name = 'ads_view.html'
-
-    def get(self, request, *args, **kwargs):
-        advertisers = Advertiser.objects.all()
-        ads_grouped = {advertiser: Ad.objects.filter(advertiser=advertiser) for advertiser in advertisers}
-        return render(request, self.template_name, {'grouped_ads': ads_grouped})
+class AdsApiView(generics.ListCreateAPIView):
+    queryset = Ad.objects.all()
+    serializer_class = AdSerializer
 
 
 class AdClickView(RedirectView):
@@ -26,32 +26,10 @@ class AdClickView(RedirectView):
         return ad.link
 
 
-class AddAdView(View):
-    template_name = 'ad_form.html'
+class ClickCountApiView(APIView):
+    serializer_class = ClickCountSerializer
 
     def get(self, request, *args, **kwargs):
-        form = AdForm()
-        return render(request, self.template_name, {'form': form})
-
-    def post(self, request, *args, **kwargs):
-        form = AdForm(request.POST)
-        if form.is_valid():
-            advertiser_id = form.cleaned_data['advertiserID']
-            advertiser = get_object_or_404(Advertiser, pk=advertiser_id)
-
-            ad = form.save(commit=False)
-            ad.advertiser = advertiser
-            ad.save()
-
-            return redirect('ads_view')
-
-        return render(request, self.template_name, {'form': form})
-
-
-class ClickCountView(View):
-    template_name = 'click_count.html'
-
-    def get_context_data(self, **kwargs):
         total_clicks = Click.objects.count()
 
         clicks_per_ad = (
@@ -67,18 +45,22 @@ class ClickCountView(View):
             .annotate(count=Count('id'))
         )
 
-        context = {'total_clicks': total_clicks, 'clicks_per_ad': clicks_per_ad, 'clicks_per_hour': clicks_per_hour}
-        return context
+        data = {
+            'total_clicks': total_clicks,
+            'clicks_per_ad': list(clicks_per_ad),
+            'clicks_per_hour': list(clicks_per_hour),
+        }
+
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid()
+
+        return Response(serializer.data)
+
+
+class RatioClickByApiView(APIView):
+    serializer_class = RatioClickByViewSerializer
 
     def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        return render(request, self.template_name, context)
-
-
-class RatioClickByView(View):
-    template_name = 'ratio_click_view.html'
-
-    def get_context_data(self, **kwargs):
         result_click = (
             Click.objects
             .annotate(hour=TruncHour('time'))
@@ -124,27 +106,23 @@ class RatioClickByView(View):
         result = sorted(result, key=lambda x: x['ratio'], reverse=True)
         total_ratio /= len(result) if result else 1
 
-        context = {'result': result, 'total_ratio': total_ratio}
-        return context
+        serialized_result = self.serializer_class(result, many=True).data
+        context = {'result': serialized_result, 'total_ratio': total_ratio}
+        return Response(context)
+
+
+class TimeBetweenClickApiView(APIView):
+    serializer_class = TimeBetweenClickSerializer
 
     def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        return render(request, self.template_name, context)
-
-
-class TimeBetweenClickView(View):
-    template_name = 'time_between_click_view.html'
-
-    def get_context_data(self, **kwargs):
         average_timedelta_per_ad = Click.objects.values('ad_id').annotate(
             avg_time_diff=Avg(F('time') - F('view_id__time'))
         )
 
         for entry in average_timedelta_per_ad:
             entry['avg_seconds'] = entry['avg_time_diff'].total_seconds()
-        return {'average_per_ad': average_timedelta_per_ad}
 
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        return render(request, self.template_name, context)
+        serialized_result = self.serializer_class(average_timedelta_per_ad, many=True).data
+        return Response(serialized_result)
+
 
