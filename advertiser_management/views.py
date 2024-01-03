@@ -1,24 +1,28 @@
 from django.db.models import Count, Avg, F
 from django.db.models.functions import TruncHour
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views import View
+from django.shortcuts import get_object_or_404
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from django.views.generic import RedirectView
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 
-from .models import Ad, Advertiser, Click, Views
-from .forms import AdForm
+from .models import Ad, Click, Views
 from .serializers import AdSerializer, ClickCountSerializer, RatioClickByViewSerializer, TimeBetweenClickSerializer
 
 
 class AdsApiView(generics.ListCreateAPIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = Ad.objects.all()
     serializer_class = AdSerializer
 
 
 class AdClickView(RedirectView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
@@ -27,6 +31,8 @@ class AdClickView(RedirectView):
 
 
 class ClickCountApiView(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = ClickCountSerializer
 
     def get(self, request, *args, **kwargs):
@@ -58,6 +64,8 @@ class ClickCountApiView(APIView):
 
 
 class RatioClickByApiView(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = RatioClickByViewSerializer
 
     def get(self, request, *args, **kwargs):
@@ -112,6 +120,8 @@ class RatioClickByApiView(APIView):
 
 
 class TimeBetweenClickApiView(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = TimeBetweenClickSerializer
 
     def get(self, request, *args, **kwargs):
