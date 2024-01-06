@@ -31,5 +31,16 @@ class Click(models.Model):
     view_id = models.ForeignKey(Views, on_delete=models.CASCADE)
 
 
+class ViewCount(models.Model):
+    from_time = models.DateTimeField()
+    to_time = models.DateTimeField()
+    ad_id = models.ForeignKey(Ad, on_delete=models.CASCADE)
+    count = models.IntegerField(default=0)
 
+
+class ClickCount(models.Model):
+    from_time = models.DateTimeField()
+    to_time = models.DateTimeField()
+    ad_id = models.ForeignKey(Ad, on_delete=models.CASCADE)
+    count = models.IntegerField(default=0)
 

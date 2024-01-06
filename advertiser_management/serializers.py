@@ -15,7 +15,6 @@ class ClickCountSerializer(serializers.Serializer):
 
 
 class RatioClickByViewSerializer(serializers.Serializer):
-    ad_id = serializers.IntegerField()
     hour = serializers.DateTimeField()
     count_click = serializers.IntegerField()
     count_view = serializers.IntegerField()
@@ -24,4 +23,4 @@ class RatioClickByViewSerializer(serializers.Serializer):
 
 class TimeBetweenClickSerializer(serializers.Serializer):
     ad_id = serializers.IntegerField()
-    avg_seconds = serializers.FloatField()
+    average = serializers.FloatField()

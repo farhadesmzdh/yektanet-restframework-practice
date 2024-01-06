@@ -1,4 +1,6 @@
-from django.db.models import Count, Avg, F
+from itertools import chain
+
+from django.db.models import Count, Avg, F, When, Case, Value, FloatField
 from django.db.models.functions import TruncHour
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import BasicAuthentication
@@ -7,7 +9,6 @@ from django.views.generic import RedirectView
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
 
 from .models import Ad, Click, Views
 from .serializers import AdSerializer, ClickCountSerializer, RatioClickByViewSerializer, TimeBetweenClickSerializer
@@ -69,54 +70,28 @@ class RatioClickByApiView(APIView):
     serializer_class = RatioClickByViewSerializer
 
     def get(self, request, *args, **kwargs):
-        result_click = (
-            Click.objects
-            .annotate(hour=TruncHour('time'))
-            .values('ad_id', 'hour')
-            .annotate(count_click=Count('ad_id'))
-            .order_by('-hour', '-count_click')
-        )
+        count_click = Click.objects.annotate(hour=TruncHour('time')).values('hour').annotate(
+            click_count=Count('id')).values('hour', 'click_count')
+        count_view = Views.objects.annotate(hour=TruncHour('time')).values('hour').annotate(
+            view_count=Count('id')).values('hour', 'view_count')
 
-        result_view = (
-            Views.objects
-            .annotate(hour=TruncHour('time'))
-            .values('ad_id', 'hour')
-            .annotate(count_view=Count('ad_id'))
-            .order_by('-hour', '-count_view')
-        )
+        # Perform left outer join
+        merged_data = count_view.annotate(click_count=Case(
+            When(hour=F('hour'), then=F('view_count')),
+            default=Value(0),
+            output_field=FloatField()
+        )).values('hour', 'view_count', 'click_count')
 
-        result = []
-        total_ratio = 0
+        # Calculate the ratio
+        context = merged_data.annotate(ratio=Case(
+            When(view_count=0, then=Value(0)),
+            default=F('click_count') / F('view_count'),
+            output_field=FloatField()
+        ))
 
-        for click_entry in result_click:
-            ad_id = click_entry['ad_id']
-            hour = click_entry['hour']
-            count_click = click_entry['count_click']
+        serialized_result = RatioClickByViewSerializer(context, many=True).data
 
-            view_entry = next(
-                (entry for entry in result_view if entry['ad_id'] == ad_id and entry['hour'] == hour),
-                None
-            )
-            count_view = view_entry['count_view'] if view_entry else 0
-
-            ratio = count_click / count_view if count_view != 0 else None
-
-            total_ratio += ratio if ratio is not None else 0
-
-            result.append({
-                'ad_id': ad_id,
-                'hour': hour,
-                'count_click': count_click,
-                'count_view': count_view,
-                'ratio': ratio
-            })
-
-        result = sorted(result, key=lambda x: x['ratio'], reverse=True)
-        total_ratio /= len(result) if result else 1
-
-        serialized_result = self.serializer_class(result, many=True).data
-        context = {'result': serialized_result, 'total_ratio': total_ratio}
-        return Response(context)
+        return Response(serialized_result)
 
 
 class TimeBetweenClickApiView(APIView):
@@ -125,14 +100,12 @@ class TimeBetweenClickApiView(APIView):
     serializer_class = TimeBetweenClickSerializer
 
     def get(self, request, *args, **kwargs):
-        average_timedelta_per_ad = Click.objects.values('ad_id').annotate(
-            avg_time_diff=Avg(F('time') - F('view_id__time'))
-        )
+        context = Click.objects.annotate(diff=(F('time') - F('view_id__time'))).values('ad_id').annotate(
+            average=Avg('diff'))
 
-        for entry in average_timedelta_per_ad:
-            entry['avg_seconds'] = entry['avg_time_diff'].total_seconds()
+        for entry in context:
+            entry['average'] = entry['average'].total_seconds()
+        print(context)
 
-        serialized_result = self.serializer_class(average_timedelta_per_ad, many=True).data
+        serialized_result = self.serializer_class(context, many=True).data
         return Response(serialized_result)
-
-
